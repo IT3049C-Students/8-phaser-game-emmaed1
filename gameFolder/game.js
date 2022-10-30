@@ -1,20 +1,28 @@
-var gameSettings = {
-    playerSpeed: 200,
+var config = {
+    type: Phaser.WEBGL,
+    width: 640,
+    height: 480,
+    backgroundColor: '#bfcc00',
+    parent: 'phaser-example',
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+var game = new Phaser.Game(config);
+
+function preload ()
+{
+    this.load.image('food', 'assets/games/snake/food.png');
+    this.load.image('body', 'assets/games/snake/body.png');
 }
 
-var config = {
-    width: 600,
-    height: 272,
-    backgroundColor: "#eee",
-    scene: [Scene1],
-    pixelArt: true,
-    physics: {
-        default: "arcade",
-        arcade: {
-            debug: false
-        }
-    }
+function create ()
+{
 }
-window.onload = function(){
-    var game = new Phaser.Game(config);
+
+function update (time, delta)
+{
 }
