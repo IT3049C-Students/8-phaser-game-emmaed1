@@ -42,9 +42,9 @@ function create(){
         },
         eat: function(){
             this.total++;
-            var x = Phaser.Math.Between(0, 39);
-            var y = Phaser.Math.Between(0, 29);
-            this.setPosition(x * 16, y * 16);
+            // var x = Phaser.Math.Between(0, 39);
+            // var y = Phaser.Math.Between(0, 29);
+            // this.setPosition(x * 16, y * 16);
         }
     });
     var Snake = new Phaser.Class({
@@ -122,6 +122,14 @@ function create(){
             }else{
                 return false;
             }
+        },
+        updateGrid: function(grid){
+            this.body.children.each(function (segment) {
+            var bx = segment.x / 16;
+            var by = segment.y / 16;
+            grid[by][bx] = false;
+        });
+            return grid;
         }
     });
     food = new Food(this, 3, 4);
@@ -143,6 +151,33 @@ function update(time, delta){
         snake.faceDown();
     }
     if (snake.update(time)){
-        snake.collideWithFood(food);
+        if (snake.collideWithFood(food)){
+            repositionFood();
+        }
+    }
+}
+function repositionFood(){
+    var testGrid = [];
+    for(var y = 0; y < 30; y++){
+        testGrid[y] = [];
+        for(var x = 0; x < 40; x++){
+            testGrid[y][x] = true;
+        }
+    }
+    snake.updateGrid(testGrid);
+    var validLocations = [];
+    for(var y = 0; y < 30; y++){
+        for(var x = 0; x < 40; x++){
+            if(testGrid[y][x] === true){
+                validLocations.push({ x: x, y: y });
+            }
+        }
+    }
+    if(validLocations.length > 0){
+        var pos = Phaser.Math.RND.pick(validLocations);
+        food.setPosition(pos.x * 16, pos.y * 16);
+        return true;
+    }else{
+        return false;
     }
 }
