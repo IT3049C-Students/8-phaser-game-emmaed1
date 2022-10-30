@@ -31,7 +31,7 @@ function create(){
         Extends: Phaser.GameObjects.Image,
         initialize:
 
-        function Food (scene, x, y){
+        function Food(scene, x, y){
             Phaser.GameObjects.Image.call(this, scene)
 
             this.setTexture('food');
@@ -39,6 +39,12 @@ function create(){
             this.setOrigin(0);
             this.total = 0;
             scene.children.add(this);
+        },
+        eat: function(){
+            this.total++;
+            var x = Phaser.Math.Between(0, 39);
+            var y = Phaser.Math.Between(0, 29);
+            this.setPosition(x * 16, y * 16);
         }
     });
     var Snake = new Phaser.Class({
@@ -52,10 +58,11 @@ function create(){
             this.alive = true;
             this.speed = 100;
             this.moveTime = 0;
+            this.tail = new Phaser.Geom.Point(x, y);
             this.heading = RIGHT;
             this.direction = RIGHT;
         },
-        update: function (time){
+        update: function(time){
             if(time >= this.moveTime){
                 return this.move(time);
             }
@@ -80,7 +87,7 @@ function create(){
                 this.heading = DOWN;
             }
         },
-        move: function (time){
+        move: function(time){
             switch(this.heading){
                 case LEFT:
                     this.headPosition.x = Phaser.Math.Wrap(this.headPosition.x - 1, 0, 40);
@@ -95,14 +102,26 @@ function create(){
                     this.headPosition.y = Phaser.Math.Wrap(this.headPosition.y + 1, 0, 30);
                     break;
             }
-            this.direction = this.heading
-            Phaser.Actions.ShiftPosition(this.body.getChildren(), this.headPosition.x * 16, this.headPosition.y * 16, 1);
-
-            this.moveTime = time+ this.speed;
+            this.direction = this.heading;
+            Phaser.Actions.ShiftPosition(this.body.getChildren(), this.headPosition.x * 16, this.headPosition.y * 16, 1, this.tail);
+            this.moveTime = time + this.speed;
             return true;
+        },
+        grow: function (){
+            var newPart = this.body.create(this.tail.x, this.tail.y, 'body');
+            newPart.setOrigin(0);
+        },
+        collideWithFood: function(food){
+            if (this.head.x === food.x && this.head.y === food.y){
+                this.grow();
+                food.eat();
+                return true;
+            }else{
+                return false;
+            }
         }
     });
-    food = new Food (this, 3, 4);
+    food = new Food(this, 3, 4);
     snake = new Snake(this, 8, 8);
     cursors = this.input.keyboard.createCursorKeys();
 }
@@ -111,22 +130,16 @@ function update(time, delta){
     if(!snake.alive){
         return;
     }
-    if (cursors.left.isDown)
-    {
+    if(cursors.left.isDown){
         snake.faceLeft();
-    }
-    else if (cursors.right.isDown)
-    {
+    }else if(cursors.right.isDown){
         snake.faceRight();
-    }
-    else if (cursors.up.isDown)
-    {
+    }else if(cursors.up.isDown){
         snake.faceUp();
-    }
-    else if (cursors.down.isDown)
-    {
+    }else if (cursors.down.isDown){
         snake.faceDown();
     }
-
-    snake.update(time);
+    if (snake.update(time)){
+        snake.collideWithFood(food);
+    }
 }
