@@ -12,6 +12,7 @@ var config = {
 };
 
 var snake;
+var food;
 var cursors;
 
 var UP = 0;
@@ -26,6 +27,20 @@ function preload(){
 }
 
 function create(){
+    var Food = new Phaser.Class({
+        Extends: Phaser.GameObjects.Image,
+        initialize:
+
+        function Food (scene, x, y){
+            Phaser.GameObjects.Image.call(this, scene)
+
+            this.setTexture('food');
+            this.setPosition(x * 16, y * 16);
+            this.setOrigin(0);
+            this.total = 0;
+            scene.children.add(this);
+        }
+    });
     var Snake = new Phaser.Class({
         initialize:
 
@@ -87,6 +102,7 @@ function create(){
             return true;
         }
     });
+    food = new Food (this, 3, 4);
     snake = new Snake(this, 8, 8);
     cursors = this.input.keyboard.createCursorKeys();
 }
