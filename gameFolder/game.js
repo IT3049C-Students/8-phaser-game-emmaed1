@@ -4,7 +4,7 @@ var config = {
     height: 480,
     backgroundColor: '#bfcc00',
     parent: 'phaser-example',
-    scene: {
+    scene:{
         preload: preload,
         create: create,
         update: update
@@ -23,34 +23,29 @@ var game = new Phaser.Game(config);
 
 function preload(){
     this.load.image('food', 'gameFolder/img/food.png');
-    this.load.image('body', 'gameFolder/img//body.png');
+    this.load.image('body', 'gameFolder/img/body.png');
 }
-
 function create(){
     var Food = new Phaser.Class({
         Extends: Phaser.GameObjects.Image,
         initialize:
 
-        function Food(scene, x, y){
-            Phaser.GameObjects.Image.call(this, scene)
+    function Food(scene, x, y){
+        Phaser.GameObjects.Image.call(this, scene)
 
-            this.setTexture('food');
-            this.setPosition(x * 16, y * 16);
-            this.setOrigin(0);
-            this.total = 0;
-            scene.children.add(this);
+        this.setTexture('food');
+        this.setPosition(x * 16, y * 16);
+        this.setOrigin(0);
+        this.total = 0;
+        scene.children.add(this);
         },
         eat: function(){
             this.total++;
-            // var x = Phaser.Math.Between(0, 39);
-            // var y = Phaser.Math.Between(0, 29);
-            // this.setPosition(x * 16, y * 16);
         }
     });
     var Snake = new Phaser.Class({
         initialize:
-
-        function Snake (scene, x, y){
+        function Snake(scene, x, y){
             this.headPosition = new Phaser.Geom.Point(x, y);
             this.body = scene.add.group();
             this.head = this.body.create(x * 16, y * 16, 'body');
@@ -104,18 +99,25 @@ function create(){
             }
             this.direction = this.heading;
             Phaser.Actions.ShiftPosition(this.body.getChildren(), this.headPosition.x * 16, this.headPosition.y * 16, 1, this.tail);
-            this.moveTime = time + this.speed;
-            return true;
+            var hitBody = Phaser.Actions.GetFirst(this.body.getChildren(), { x: this.head.x, y: this.head.y }, 1);
+            if(hitBody){
+                console.log('dead');
+                this.alive = false;
+                return false;
+            }else{
+                this.moveTime = time + this.speed;
+                return true;
+            }
         },
-        grow: function (){
+        grow: function(){
             var newPart = this.body.create(this.tail.x, this.tail.y, 'body');
             newPart.setOrigin(0);
         },
         collideWithFood: function(food){
-            if (this.head.x === food.x && this.head.y === food.y){
+            if(this.head.x === food.x && this.head.y === food.y){
                 this.grow();
                 food.eat();
-                if (this.speed > 20 && food.total % 5 === 0){
+                if(this.speed > 20 && food.total % 5 === 0){
                     this.speed -= 5;
                 }
                 return true;
@@ -124,11 +126,11 @@ function create(){
             }
         },
         updateGrid: function(grid){
-            this.body.children.each(function (segment) {
-            var bx = segment.x / 16;
-            var by = segment.y / 16;
-            grid[by][bx] = false;
-        });
+            this.body.children.each(function(segment){
+                var bx = segment.x / 16;
+                var by = segment.y / 16;
+                grid[by][bx] = false;
+            });
             return grid;
         }
     });
@@ -136,7 +138,6 @@ function create(){
     snake = new Snake(this, 8, 8);
     cursors = this.input.keyboard.createCursorKeys();
 }
-
 function update(time, delta){
     if(!snake.alive){
         return;
@@ -147,11 +148,11 @@ function update(time, delta){
         snake.faceRight();
     }else if(cursors.up.isDown){
         snake.faceUp();
-    }else if (cursors.down.isDown){
+    }else if(cursors.down.isDown){
         snake.faceDown();
     }
-    if (snake.update(time)){
-        if (snake.collideWithFood(food)){
+    if(snake.update(time)){
+        if(snake.collideWithFood(food)){
             repositionFood();
         }
     }
